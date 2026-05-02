@@ -170,13 +170,14 @@ function mostraPagina(id) {
     document.querySelectorAll(".pagina").forEach((p) => p.classList.remove("attiva"));
     document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
     document.getElementById("pagina-" + id).classList.add("attiva");
-    const tabs = ["oggi", "timer", "piano", "soldi"];
+    const tabs = ["oggi", "timer", "piano", "soldi", "impostazioni"];
     document.querySelectorAll(".tab")[tabs.indexOf(id)].classList.add("active");
 
     if (id === "piano") aggiornaPiano();
     if (id === "soldi") aggiornaSoldi();
     if (id === "timer") aggiornaTimer();
     if (id === "oggi") aggiornaOggi();
+    if (id === "impostazioni") aggiornaImpostazioni();
 }
 
 // ================================
@@ -333,6 +334,50 @@ setInterval(() => {
         aggiornaTimer();
     }
 }, 1000);
+
+// ================================
+// PAGINA IMPOSTAZIONI
+// ================================
+function aggiornaImpostazioni() {
+    document.getElementById("info-sigarette").textContent = stato.sigaretteAlGiorno;
+    document.getElementById("info-prezzo").textContent = formattaEuro(stato.prezzoPackchetto);
+    document.getElementById("info-modalita").textContent = stato.modalita === "piano"
+        ? "Piano 8 settimane"
+        : "Intervallo crescente";
+    document.getElementById("info-data").textContent = stato.dataInizio
+        ? new Date(stato.dataInizio).toLocaleDateString("it-IT")
+        : "--";
+
+    // Precompila i campi di modifica
+    document.getElementById("mod-sigarette").value = stato.sigaretteAlGiorno;
+    document.getElementById("mod-prezzo").value = stato.prezzoPackchetto;
+    document.getElementById("mod-quantita").value = stato.sigarettePerPacchetto;
+}
+
+function salvaImpostazioni() {
+    const sig = parseInt(document.getElementById("mod-sigarette").value);
+    const prezzo = parseFloat(document.getElementById("mod-prezzo").value);
+    const quantita = parseInt(document.getElementById("mod-quantita").value);
+
+    if (!sig || !prezzo || !quantita) {
+        alert("Compila tutti i campi!");
+        return;
+    }
+
+    stato.sigaretteAlGiorno = sig;
+    stato.prezzoPackchetto = prezzo;
+    stato.sigarettePerPacchetto = quantita;
+    salvaStato();
+    aggiornaImpostazioni();
+    alert("Impostazioni salvate!");
+}
+
+function resetApp() {
+    if (confirm("Sei sicuro? Perderai tutto il progresso!")) {
+        localStorage.removeItem("smetti_stato");
+        window.location.reload();
+    }
+}
 
 // ================================
 // SERVICE WORKER

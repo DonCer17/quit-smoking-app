@@ -369,3 +369,32 @@ body {
   color: #888;
   margin-top: 6px;
 }
+
+/* IMPOSTAZIONI */
+.impostazione-riga {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.impostazione-riga:last-child {
+  border-bottom: none;
+}
+
+.impostazione-label {
+  color: #888;
+}
+
+.impostazione-valore {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+/* TAB IMPOSTAZIONI PIU PICCOLO */
+.tabs .tab:last-child {
+  flex: 0.4;
+  font-size: 16px;
+}
