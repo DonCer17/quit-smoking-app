@@ -63,6 +63,42 @@ function formattaIntervallo(m) {
     if (m >= 60) return Math.floor(m / 60) + "h" + (m % 60 > 0 ? " " + m % 60 + "min" : "");
     return m + " min";
 }
+
+// ================================
+// STREAK E MESSAGGI
+// ================================
+function calcolaStreak() {
+    if (!stato.storicoGiornaliero || stato.storicoGiornaliero.length === 0) return 0;
+    let streak = 0;
+    const storico = [...stato.storicoGiornaliero].reverse();
+    for (let giorno of storico) {
+        if (giorno.fumate <= giorno.obiettivo) streak++;
+        else break;
+    }
+    return streak;
+}
+
+function getMessaggioMotivazionale() {
+    const giorni = stato.dataInizio
+        ? Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000) + 1
+        : 1;
+    const streak = calcolaStreak();
+    const fumateOggi = stato.logOggi.length;
+    const obiettivo = getObiettivoOggi();
+
+    // Messaggi basati sulla situazione attuale
+    if (fumateOggi > obiettivo) return "Oggi è andata così — domani ricomincia. Ce la fai! 💪";
+    if (streak >= 7) return "🔥 " + streak + " giorni di fila! Sei inarrestabile!";
+    if (streak >= 3) return "⚡ " + streak + " giorni consecutivi rispettati. Continua così!";
+    if (giorni === 1) return "🌱 Primo giorno — il viaggio inizia adesso!";
+    if (giorni <= 3) return "💪 I primi giorni sono i più difficili. Tieni duro!";
+    if (giorni === 7) return "🎉 Una settimana intera — sei già un campione!";
+    if (giorni === 14) return "🏆 Due settimane! Il tuo corpo ti sta ringraziando.";
+    if (giorni === 30) return "🌟 Un mese! Hai fatto qualcosa di straordinario.";
+    if (fumateOggi === 0) return "✨ Ancora nessuna sigaretta oggi. Fantastico!";
+    return "🚭 Giorno " + giorni + " — stai costruendo una nuova abitudine!";
+}
+
 function oggiStringa() { return new Date().toISOString().slice(0, 10); }
 
 // ================================
@@ -212,6 +248,8 @@ function aggiornaDashboard() {
 
     // Header sottotitolo
     document.getElementById("header-sottotitolo").textContent = "Giorno " + giorni + " del percorso";
+    document.getElementById("messaggio-motivazionale").textContent = getMessaggioMotivazionale();
+    document.getElementById("stat-streak").textContent = calcolaStreak();
 }
 
 // ================================

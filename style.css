@@ -398,3 +398,13 @@ body {
   flex: 0.4;
   font-size: 16px;
 }
+
+/* MESSAGGIO MOTIVAZIONALE */
+.messaggio-motivazionale {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d9e75;
+  text-align: center;
+  padding: 10px 0 4px 0;
+  line-height: 1.5;
+}
