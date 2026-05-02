@@ -12,7 +12,117 @@
   </head>
   <body>
     <div id="app">
-      <h1>Caricamento...</h1>
+      <!-- HEADER -->
+      <div class="header">
+        <h1>🚭 SmettiFumo</h1>
+        <p>Il tuo piano personale</p>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" onclick="mostraPagina('oggi')">Oggi</button>
+        <button class="tab" onclick="mostraPagina('timer')">Timer</button>
+        <button class="tab" onclick="mostraPagina('piano')">Piano</button>
+        <button class="tab" onclick="mostraPagina('soldi')">Soldi</button>
+      </div>
+
+      <!-- PAGINA OGGI -->
+      <div id="pagina-oggi" class="pagina attiva">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Fumate oggi</div>
+            <div class="metric-value amber" id="cig-oggi">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Obiettivo</div>
+            <div class="metric-value" id="cig-obiettivo">12</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Risparmiate</div>
+            <div class="metric-value green" id="cig-risparmiate">15</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Settimana</div>
+            <div class="metric-value" id="settimana-label">Sett. 1</div>
+          </div>
+        </div>
+        <div class="progress-wrap">
+          <div
+            class="progress-bar"
+            id="barra-progresso"
+            style="width: 0%"
+          ></div>
+        </div>
+        <p class="testo-progresso" id="testo-progresso">
+          0 / 12 sigarette oggi
+        </p>
+        <button class="btn btn-primary" onclick="fumatoOra()">
+          Ho fumato una sigaretta
+        </button>
+        <button class="btn btn-danger" onclick="annullaUltima()">
+          Annulla ultima
+        </button>
+        <div class="card">
+          <h3>Registro di oggi</h3>
+          <div id="log-lista"></div>
+        </div>
+      </div>
+
+      <!-- PAGINA TIMER -->
+      <div id="pagina-timer" class="pagina">
+        <div class="card" style="text-align: center; padding: 2rem 1rem">
+          <div class="timer-big" id="timer-display">--:--</div>
+          <div class="timer-testo" id="timer-testo">
+            Premi il bottone per avviare
+          </div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Intervallo settimana</div>
+            <div class="metric-value" id="intervallo-label">80 min</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Prossima alle</div>
+            <div class="metric-value" id="prossima-ora">--:--</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="avviaTimer()">
+          Ho appena fumato — avvia timer
+        </button>
+        <button class="btn btn-secondary" onclick="resetTimer()">
+          Reset timer
+        </button>
+      </div>
+
+      <!-- PAGINA PIANO -->
+      <div id="pagina-piano" class="pagina">
+        <div class="card">
+          <h3 style="margin-bottom: 12px">Piano 8 settimane</h3>
+          <div id="piano-lista"></div>
+        </div>
+      </div>
+
+      <!-- PAGINA SOLDI -->
+      <div id="pagina-soldi" class="pagina">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric-label">Risparmio oggi</div>
+            <div class="metric-value green" id="soldi-oggi">€0,00</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Totale risparmiato</div>
+            <div class="metric-value green" id="soldi-totale">€0,00</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Giorni dal via</div>
+            <div class="metric-value" id="giorni-totali">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Sigarette evitate</div>
+            <div class="metric-value green" id="sigarette-evitate">0</div>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="app.js"></script>
   </body>
