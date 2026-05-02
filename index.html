@@ -70,7 +70,7 @@
 
       <!-- PAGINA TIMER -->
       <div id="pagina-timer" class="pagina">
-        <div class="card" style="text-align: center; padding: 2rem 1rem">
+        <div class="card" style="text-align: center; padding: 1.5rem 1rem">
           <div class="timer-big" id="timer-display">--:--</div>
           <div class="timer-testo" id="timer-testo">
             Premi il bottone per avviare
@@ -78,7 +78,7 @@
         </div>
         <div class="metric-grid">
           <div class="metric">
-            <div class="metric-label">Intervallo settimana</div>
+            <div class="metric-label">Intervallo attuale</div>
             <div class="metric-value" id="intervallo-label">80 min</div>
           </div>
           <div class="metric">
@@ -92,6 +92,12 @@
         <button class="btn btn-secondary" onclick="resetTimer()">
           Reset timer
         </button>
+        <div class="card" style="margin-top: 10px">
+          <p style="font-size: 13px; color: #888">
+            💡 Quando il timer scade puoi fumare. Se non hai voglia, aspetta
+            ancora — sei tu il capo!
+          </p>
+        </div>
       </div>
 
       <!-- PAGINA PIANO -->
@@ -122,8 +128,26 @@
             <div class="metric-value green" id="sigarette-evitate">0</div>
           </div>
         </div>
+        <div class="card">
+          <h3>Proiezioni risparmio</h3>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Fine piano (8 sett.)</span>
+            <span class="proiezione-valore">~€120</span>
+          </div>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 3 mesi</span>
+            <span class="proiezione-valore">~€260</span>
+          </div>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 6 mesi</span>
+            <span class="proiezione-valore">~€520</span>
+          </div>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 1 anno</span>
+            <span class="proiezione-valore">~€1.058</span>
+          </div>
+        </div>
       </div>
-    </div>
     <script src="app.js"></script>
   </body>
 </html>

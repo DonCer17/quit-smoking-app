@@ -243,3 +243,46 @@ body {
   margin-bottom: 10px;
   color: #1a1a1a;
 }
+
+/* BOTTONE TIMER GRANDE */
+.btn-timer {
+  background: #1d9e75;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 160px;
+  height: 160px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  margin: 1.5rem auto;
+  box-shadow: 0 4px 20px rgba(29, 158, 117, 0.35);
+}
+
+.btn-timer:active {
+  transform: scale(0.97);
+}
+
+/* SEZIONE SOLDI - PROIEZIONI */
+.proiezione-riga {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.proiezione-riga:last-child {
+  border-bottom: none;
+}
+
+.proiezione-label {
+  color: #555;
+}
+
+.proiezione-valore {
+  font-weight: 600;
+  color: #1d9e75;
+}
