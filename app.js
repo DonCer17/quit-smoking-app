@@ -242,3 +242,15 @@ setInterval(() => {
         aggiornaTimer();
     }
 }, 1000);
+
+// ================================
+// REGISTRAZIONE SERVICE WORKER
+// ================================
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker
+            .register("/quit-smoking-app/sw.js")
+            .then(() => console.log("Service Worker registrato"))
+            .catch((err) => console.log("Errore Service Worker:", err));
+    });
+}
