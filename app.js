@@ -99,6 +99,61 @@ function getMessaggioMotivazionale() {
     return "🚭 Giorno " + giorni + " — stai costruendo una nuova abitudine!";
 }
 
+function aggiornaGrafico() {
+    const el = document.getElementById("grafico-7giorni");
+    if (!el) return;
+
+    // Costruiamo gli ultimi 7 giorni
+    const oggi = oggiStringa();
+    const giorni = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const str = d.toISOString().slice(0, 10);
+        const label = d.toLocaleDateString("it-IT", { weekday: "short" });
+        giorni.push({ data: str, label: label });
+    }
+
+    // Associa i dati storici
+    const dati = giorni.map((g) => {
+        if (g.data === oggi) {
+            return {
+                label: "Oggi",
+                fumate: stato.logOggi.length,
+                obiettivo: getObiettivoOggi(),
+                isOggi: true,
+            };
+        }
+        const storico = (stato.storicoGiornaliero || []).find((s) => s.data === g.data);
+        return {
+            label: g.label,
+            fumate: storico ? storico.fumate : null,
+            obiettivo: storico ? storico.obiettivo : getObiettivoOggi(),
+            isOggi: false,
+        };
+    });
+
+    // Valore massimo per scalare le barre
+    const maxValore = Math.max(...dati.map((d) => d.fumate || 0), getObiettivoOggi(), 1);
+
+    el.innerHTML = dati.map((d) => {
+        const altezza = d.fumate !== null
+            ? Math.max(4, Math.round((d.fumate / maxValore) * 90))
+            : 0;
+        const classe = d.fumate === null
+            ? "vuota"
+            : d.fumate <= d.obiettivo ? "verde" : "arancione";
+        const numero = d.fumate !== null ? d.fumate : "";
+
+        return `
+      <div class="grafico-colonna">
+        <span class="grafico-numero">${numero}</span>
+        <div class="grafico-barra ${classe}" style="height:${altezza}px"></div>
+        <span class="grafico-label">${d.label}</span>
+      </div>`;
+    }).join("");
+}
+
 function oggiStringa() { return new Date().toISOString().slice(0, 10); }
 
 // ================================
@@ -250,6 +305,7 @@ function aggiornaDashboard() {
     document.getElementById("header-sottotitolo").textContent = "Giorno " + giorni + " del percorso";
     document.getElementById("messaggio-motivazionale").textContent = getMessaggioMotivazionale();
     document.getElementById("stat-streak").textContent = calcolaStreak();
+    aggiornaGrafico();
 }
 
 // ================================
