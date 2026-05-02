@@ -1,5 +1,5 @@
 // ================================
-// DATI DEL PIANO 8 SETTIMANE
+// DATI PIANO 8 SETTIMANE
 // ================================
 const SETTIMANE = [
     { label: "Sett. 1", sigarette: 12, intervallo: 80 },
@@ -13,30 +13,29 @@ const SETTIMANE = [
 ];
 
 // ================================
-// STATO DELL'APP
+// STATO
 // ================================
 let stato = {
-    // Onboarding
     onboardingCompletato: false,
     sigaretteAlGiorno: 15,
     prezzoPackchetto: 5.80,
     sigarettePerPacchetto: 20,
-    modalita: "piano", // "piano" o "libera"
-    intervalloIniziale: 60, // solo per modalità libera
-
-    // Sessione
+    modalita: "piano",
+    intervalloIniziale: 60,
     dataInizio: null,
     logOggi: [],
     ultimoGiorno: null,
     totaleRisparmiato: 0,
+    giorniObiettivo: 0,
     timerFine: null,
-    intervalloCorrente: 60, // aumenta di 10 ogni sigaretta in modalità libera
+    intervalloCorrente: 60,
+    storicoGiornaliero: [],
 };
 
 let modalitaSelezionata = "piano";
 
 // ================================
-// CALCOLI DINAMICI
+// CALCOLI
 // ================================
 function getPrezzoSigaretta() {
     return stato.prezzoPackchetto / stato.sigarettePerPacchetto;
@@ -44,9 +43,7 @@ function getPrezzoSigaretta() {
 
 function getSettimanaCorrente() {
     if (!stato.dataInizio) return 0;
-    const diff = Math.floor(
-        (Date.now() - new Date(stato.dataInizio).getTime()) / 86400000
-    );
+    const diff = Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000);
     return Math.min(Math.floor(diff / 7), 7);
 }
 
@@ -60,8 +57,16 @@ function getIntervallo() {
     return SETTIMANE[getSettimanaCorrente()].intervallo;
 }
 
+function formattaOra(date) { return date.toTimeString().slice(0, 5); }
+function formattaEuro(v) { return "€" + v.toFixed(2).replace(".", ","); }
+function formattaIntervallo(m) {
+    if (m >= 60) return Math.floor(m / 60) + "h" + (m % 60 > 0 ? " " + m % 60 + "min" : "");
+    return m + " min";
+}
+function oggiStringa() { return new Date().toISOString().slice(0, 10); }
+
 // ================================
-// SALVATAGGIO E CARICAMENTO
+// SALVATAGGIO
 // ================================
 function salvaStato() {
     localStorage.setItem("smetti_stato", JSON.stringify(stato));
@@ -76,42 +81,29 @@ function caricaStato() {
         if (stato.ultimoGiorno !== null) {
             const risparmiate = Math.max(0, stato.sigaretteAlGiorno - stato.logOggi.length);
             stato.totaleRisparmiato += risparmiate * getPrezzoSigaretta();
+
+            // Salva storico giornaliero
+            if (!stato.storicoGiornaliero) stato.storicoGiornaliero = [];
+            stato.storicoGiornaliero.push({
+                data: stato.ultimoGiorno,
+                fumate: stato.logOggi.length,
+                obiettivo: getObiettivoOggi(),
+            });
+            // Tieni solo ultimi 30 giorni
+            if (stato.storicoGiornaliero.length > 30) stato.storicoGiornaliero.shift();
+
+            // Conta giorni obiettivo rispettato
+            if (stato.logOggi.length <= getObiettivoOggi()) {
+                stato.giorniObiettivo = (stato.giorniObiettivo || 0) + 1;
+            }
         }
+
         stato.logOggi = [];
         stato.ultimoGiorno = oggi;
-
-        // Reset intervallo corrente ogni giorno in modalità libera
-        if (stato.modalita === "libera") {
-            stato.intervalloCorrente = stato.intervalloIniziale;
-        }
-
+        if (stato.modalita === "libera") stato.intervalloCorrente = stato.intervalloIniziale;
         if (!stato.dataInizio) stato.dataInizio = oggi;
         salvaStato();
     }
-}
-
-// ================================
-// FUNZIONI DI SUPPORTO
-// ================================
-function oggiStringa() {
-    return new Date().toISOString().slice(0, 10);
-}
-
-function formattaOra(date) {
-    return date.toTimeString().slice(0, 5);
-}
-
-function formattaEuro(valore) {
-    return "€" + valore.toFixed(2).replace(".", ",");
-}
-
-function formattaIntervallo(minuti) {
-    if (minuti >= 60) {
-        const h = Math.floor(minuti / 60);
-        const m = minuti % 60;
-        return h + "h" + (m > 0 ? " " + m + "min" : "");
-    }
-    return minuti + " min";
 }
 
 // ================================
@@ -124,7 +116,7 @@ function selezionaModalita(modalita) {
     document.getElementById("campo-intervallo-iniziale").style.display = modalita === "libera" ? "block" : "none";
     document.getElementById("descrizione-modalita").textContent = modalita === "piano"
         ? "Segui un piano strutturato: ogni settimana riduci le sigarette fino a smettere."
-        : "Ogni sigaretta fumata aumenta l'intervallo di 10 minuti. Parti dal tuo ritmo attuale.";
+        : "Ogni sigaretta fumata aumenta l'intervallo di 10 minuti.";
 }
 
 function completaOnboarding() {
@@ -133,11 +125,7 @@ function completaOnboarding() {
     const quantita = parseInt(document.getElementById("input-quantita").value);
     const intervaloIniziale = parseInt(document.getElementById("input-intervallo-iniziale").value) || 60;
 
-    // Validazione
-    if (!sig || !prezzo || !quantita) {
-        alert("Compila tutti i campi per continuare!");
-        return;
-    }
+    if (!sig || !prezzo || !quantita) { alert("Compila tutti i campi!"); return; }
 
     stato.sigaretteAlGiorno = sig;
     stato.prezzoPackchetto = prezzo;
@@ -148,19 +136,22 @@ function completaOnboarding() {
     stato.onboardingCompletato = true;
     stato.dataInizio = oggiStringa();
     stato.ultimoGiorno = oggiStringa();
+    stato.storicoGiornaliero = [];
+    stato.giorniObiettivo = 0;
 
     salvaStato();
+    richiediPermessoNotifiche();
     avviaApp();
 }
 
 // ================================
-// AVVIO APP
+// AVVIO
 // ================================
 function avviaApp() {
     document.getElementById("pagina-onboarding").classList.remove("attiva");
     document.querySelector(".header").style.display = "block";
     document.querySelector(".tabs").style.display = "flex";
-    mostraPagina("oggi");
+    mostraPagina("dashboard");
 }
 
 // ================================
@@ -170,35 +161,35 @@ function mostraPagina(id) {
     document.querySelectorAll(".pagina").forEach((p) => p.classList.remove("attiva"));
     document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
     document.getElementById("pagina-" + id).classList.add("attiva");
-    const tabs = ["oggi", "timer", "piano", "soldi", "impostazioni"];
+    const tabs = ["dashboard", "timer", "impostazioni"];
     document.querySelectorAll(".tab")[tabs.indexOf(id)].classList.add("active");
-
-    if (id === "piano") aggiornaPiano();
-    if (id === "soldi") aggiornaSoldi();
+    if (id === "dashboard") aggiornaDashboard();
     if (id === "timer") aggiornaTimer();
-    if (id === "oggi") aggiornaOggi();
     if (id === "impostazioni") aggiornaImpostazioni();
 }
 
 // ================================
-// PAGINA OGGI
+// DASHBOARD
 // ================================
-function aggiornaOggi() {
+function aggiornaDashboard() {
     const fumateOggi = stato.logOggi.length;
     const obiettivo = getObiettivoOggi();
-    const risparmiate = Math.max(0, stato.sigaretteAlGiorno - fumateOggi);
+    const giorni = stato.dataInizio
+        ? Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000) + 1
+        : 1;
+    const totaleEvitate = Math.round(stato.totaleRisparmiato / getPrezzoSigaretta());
+    const risparmioOggi = Math.max(0, stato.sigaretteAlGiorno - fumateOggi) * getPrezzoSigaretta();
+    const totale = stato.totaleRisparmiato + risparmioOggi;
+    const risparmioGiornaliero = stato.sigaretteAlGiorno * getPrezzoSigaretta();
 
+    // Oggi
     document.getElementById("cig-oggi").textContent = fumateOggi;
     document.getElementById("cig-obiettivo").textContent = obiettivo;
-    document.getElementById("cig-risparmiate").textContent = risparmiate;
-    document.getElementById("settimana-label").textContent = stato.modalita === "libera"
-        ? "Libera"
-        : SETTIMANE[getSettimanaCorrente()].label;
-
-    const pct = obiettivo > 0 ? Math.min(100, Math.round((fumateOggi / obiettivo) * 100)) : 100;
+    const pct = obiettivo > 0 ? Math.min(100, Math.round(fumateOggi / obiettivo * 100)) : 100;
     document.getElementById("barra-progresso").style.width = pct + "%";
     document.getElementById("testo-progresso").textContent = fumateOggi + " / " + obiettivo + " sigarette oggi";
 
+    // Log
     const logEl = document.getElementById("log-lista");
     if (stato.logOggi.length === 0) {
         logEl.innerHTML = "<p class='log-vuoto'>Nessuna sigaretta ancora oggi 💪</p>";
@@ -207,21 +198,32 @@ function aggiornaOggi() {
             .map((t, i) => `<div class='log-riga'><span>#${i + 1}</span><span>${t}</span></div>`)
             .join("");
     }
+
+    // Percorso
+    document.getElementById("stat-giorni").textContent = giorni;
+    document.getElementById("stat-giorni-ok").textContent = stato.giorniObiettivo || 0;
+    document.getElementById("stat-evitate").textContent = totaleEvitate;
+    document.getElementById("stat-risparmio").textContent = formattaEuro(totale);
+
+    // Proiezioni basate sul risparmio giornaliero reale
+    document.getElementById("proj-3mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 90);
+    document.getElementById("proj-6mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 180);
+    document.getElementById("proj-anno").textContent = "~" + formattaEuro(risparmioGiornaliero * 365);
+
+    // Header sottotitolo
+    document.getElementById("header-sottotitolo").textContent = "Giorno " + giorni + " del percorso";
 }
 
+// ================================
+// AZIONI SIGARETTA
+// ================================
 function fumatoOra() {
     const ora = formattaOra(new Date());
     stato.logOggi.push(ora);
-
-    if (stato.modalita === "libera") {
-        stato.intervalloCorrente += 10;
-    }
-
+    if (stato.modalita === "libera") stato.intervalloCorrente += 10;
     stato.timerFine = Date.now() + getIntervallo() * 60000;
     salvaStato();
-    aggiornaOggi();
-
-    // Schedula notifica allo scadere del timer
+    aggiornaDashboard();
     schedulaNotifica(getIntervallo());
 }
 
@@ -232,26 +234,22 @@ function annullaUltima() {
             stato.intervalloCorrente -= 10;
         }
         salvaStato();
-        aggiornaOggi();
+        aggiornaDashboard();
     }
 }
 
 // ================================
-// PAGINA TIMER
+// TIMER
 // ================================
 function aggiornaTimer() {
     document.getElementById("intervallo-label").textContent = formattaIntervallo(getIntervallo());
-
     if (stato.timerFine) {
         const rimanente = stato.timerFine - Date.now();
-        const prossima = new Date(stato.timerFine);
-        document.getElementById("prossima-ora").textContent = formattaOra(prossima);
-
+        document.getElementById("prossima-ora").textContent = formattaOra(new Date(stato.timerFine));
         if (rimanente > 0) {
             const m = Math.floor(rimanente / 60000);
             const s = Math.floor((rimanente % 60000) / 1000);
-            document.getElementById("timer-display").textContent =
-                String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+            document.getElementById("timer-display").textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
             document.getElementById("timer-testo").textContent = "alla prossima sigaretta";
         } else {
             document.getElementById("timer-display").textContent = "OK!";
@@ -277,81 +275,13 @@ function resetTimer() {
 }
 
 // ================================
-// PAGINA PIANO
-// ================================
-function aggiornaPiano() {
-    if (stato.modalita === "libera") {
-        document.getElementById("piano-lista").innerHTML = `
-      <div style="text-align:center; padding: 1rem 0; color: #888; font-size:14px;">
-        <p style="font-size:32px; margin-bottom:12px">🎯</p>
-        <p>Sei in modalità <strong>intervallo crescente</strong>.</p>
-        <p style="margin-top:8px">Intervallo attuale: <strong>${formattaIntervallo(stato.intervalloCorrente)}</strong></p>
-        <p style="margin-top:4px">Intervallo iniziale: <strong>${formattaIntervallo(stato.intervalloIniziale)}</strong></p>
-        <p style="margin-top:4px">Ogni sigaretta aggiunge <strong>10 minuti</strong>.</p>
-      </div>`;
-        return;
-    }
-
-    const settCorrente = getSettimanaCorrente();
-    document.getElementById("piano-lista").innerHTML = SETTIMANE.map((s, i) => `
-    <div class="settimana-riga ${i === settCorrente ? "attiva-settimana" : ""}">
-      <span class="sett-label">${s.label}${i === settCorrente ? " ◀" : ""}</span>
-      <span class="sett-cig">${s.sigarette > 0 ? s.sigarette + " sig." : "🎉 Libero!"}</span>
-      <span class="sett-intervallo">${s.intervallo > 0 ? "ogni " + formattaIntervallo(s.intervallo) : ""}</span>
-    </div>`).join("");
-}
-
-// ================================
-// PAGINA SOLDI
-// ================================
-function aggiornaSoldi() {
-    const fumateOggi = stato.logOggi.length;
-    const risparmioOggi = Math.max(0, stato.sigaretteAlGiorno - fumateOggi) * getPrezzoSigaretta();
-    const giorni = stato.dataInizio
-        ? Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000) + 1
-        : 1;
-    const totale = stato.totaleRisparmiato + risparmioOggi;
-
-    document.getElementById("soldi-oggi").textContent = formattaEuro(risparmioOggi);
-    document.getElementById("soldi-totale").textContent = formattaEuro(totale);
-    document.getElementById("giorni-totali").textContent = giorni;
-    document.getElementById("sigarette-evitate").textContent = Math.round(totale / getPrezzoSigaretta());
-}
-
-// ================================
-// INIT
-// ================================
-caricaStato();
-
-if (stato.onboardingCompletato) {
-    avviaApp();
-} else {
-    // Nascondi header e tabs finché non completa onboarding
-    document.querySelector(".header").style.display = "none";
-    document.querySelector(".tabs").style.display = "none";
-}
-
-setInterval(() => {
-    if (document.getElementById("pagina-timer") &&
-        document.getElementById("pagina-timer").classList.contains("attiva")) {
-        aggiornaTimer();
-    }
-}, 1000);
-
-// ================================
-// PAGINA IMPOSTAZIONI
+// IMPOSTAZIONI
 // ================================
 function aggiornaImpostazioni() {
     document.getElementById("info-sigarette").textContent = stato.sigaretteAlGiorno;
     document.getElementById("info-prezzo").textContent = formattaEuro(stato.prezzoPackchetto);
-    document.getElementById("info-modalita").textContent = stato.modalita === "piano"
-        ? "Piano 8 settimane"
-        : "Intervallo crescente";
-    document.getElementById("info-data").textContent = stato.dataInizio
-        ? new Date(stato.dataInizio).toLocaleDateString("it-IT")
-        : "--";
-
-    // Precompila i campi di modifica
+    document.getElementById("info-modalita").textContent = stato.modalita === "piano" ? "Piano 8 settimane" : "Intervallo crescente";
+    document.getElementById("info-data").textContent = stato.dataInizio ? new Date(stato.dataInizio).toLocaleDateString("it-IT") : "--";
     document.getElementById("mod-sigarette").value = stato.sigaretteAlGiorno;
     document.getElementById("mod-prezzo").value = stato.prezzoPackchetto;
     document.getElementById("mod-quantita").value = stato.sigarettePerPacchetto;
@@ -361,12 +291,7 @@ function salvaImpostazioni() {
     const sig = parseInt(document.getElementById("mod-sigarette").value);
     const prezzo = parseFloat(document.getElementById("mod-prezzo").value);
     const quantita = parseInt(document.getElementById("mod-quantita").value);
-
-    if (!sig || !prezzo || !quantita) {
-        alert("Compila tutti i campi!");
-        return;
-    }
-
+    if (!sig || !prezzo || !quantita) { alert("Compila tutti i campi!"); return; }
     stato.sigaretteAlGiorno = sig;
     stato.prezzoPackchetto = prezzo;
     stato.sigarettePerPacchetto = quantita;
@@ -389,7 +314,6 @@ async function richiediPermessoNotifiche() {
     if (!("Notification" in window)) return false;
     if (Notification.permission === "granted") return true;
     if (Notification.permission === "denied") return false;
-
     const permesso = await Notification.requestPermission();
     return permesso === "granted";
 }
@@ -397,28 +321,38 @@ async function richiediPermessoNotifiche() {
 async function schedulaNotifica(minutiRimanenti) {
     const permesso = await richiediPermessoNotifiche();
     if (!permesso) return;
-
-    // Cancella eventuali notifiche precedenti
     if (window._notificaTimer) clearTimeout(window._notificaTimer);
-
-    const ms = minutiRimanenti * 60 * 1000;
-
     window._notificaTimer = setTimeout(() => {
         if (Notification.permission === "granted") {
-            const reg = navigator.serviceWorker.controller;
-            if (reg) {
-                navigator.serviceWorker.ready.then((registration) => {
-                    registration.showNotification("🚭 SmettiFumo", {
-                        body: "Il timer è scaduto — puoi fumare adesso. Ma se riesci ad aspettare ancora, sei più forte!",
-                        icon: "/quit-smoking-app/icons/icon-192.png",
-                        badge: "/quit-smoking-app/icons/icon-192.png",
-                        vibrate: [200, 100, 200],
-                    });
+            navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification("🚭 SmettiFumo", {
+                    body: "Il timer è scaduto — puoi fumare adesso. Ma se riesci ad aspettare ancora, sei più forte!",
+                    icon: "/quit-smoking-app/icons/icon-192.png",
+                    badge: "/quit-smoking-app/icons/icon-192.png",
+                    vibrate: [200, 100, 200],
                 });
-            }
+            });
         }
-    }, ms);
+    }, minutiRimanenti * 60 * 1000);
 }
+
+// ================================
+// INIT
+// ================================
+caricaStato();
+if (stato.onboardingCompletato) {
+    avviaApp();
+} else {
+    document.querySelector(".header").style.display = "none";
+    document.querySelector(".tabs").style.display = "none";
+}
+
+setInterval(() => {
+    if (document.getElementById("pagina-timer") &&
+        document.getElementById("pagina-timer").classList.contains("attiva")) {
+        aggiornaTimer();
+    }
+}, 1000);
 
 // ================================
 // SERVICE WORKER
@@ -427,7 +361,7 @@ if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker
             .register("/quit-smoking-app/sw.js")
-            .then(() => console.log("Service Worker registrato"))
-            .catch((err) => console.log("Errore Service Worker:", err));
+            .then(() => console.log("SW registrato"))
+            .catch((err) => console.log("Errore SW:", err));
     });
 }

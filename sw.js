@@ -1,4 +1,4 @@
-const CACHE_NAME = "smettifumo-v2";
+const CACHE_NAME = "smettifumo-v3";
 const FILES_DA_CACHARE = [
     "/quit-smoking-app/",
     "/quit-smoking-app/index.html",

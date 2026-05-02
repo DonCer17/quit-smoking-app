@@ -21,7 +21,6 @@
           <p class="onboarding-sottotitolo">
             Rispondi a 3 domande per personalizzare il tuo piano
           </p>
-
           <div class="onboarding-campo">
             <label>Quante sigarette fumi al giorno?</label>
             <input
@@ -32,7 +31,6 @@
               max="60"
             />
           </div>
-
           <div class="onboarding-campo">
             <label>Prezzo del pacchetto (€)</label>
             <input
@@ -43,7 +41,6 @@
               step="0.1"
             />
           </div>
-
           <div class="onboarding-campo">
             <label>Sigarette per pacchetto</label>
             <input
@@ -54,7 +51,6 @@
               max="40"
             />
           </div>
-
           <div class="onboarding-campo">
             <label>Modalità timer</label>
             <div class="toggle-wrap">
@@ -78,15 +74,12 @@
               fino a smettere.
             </p>
           </div>
-
           <div
             class="onboarding-campo"
             id="campo-intervallo-iniziale"
             style="display: none"
           >
-            <label
-              >Intervallo iniziale tra una sigaretta e l'altra (minuti)</label
-            >
+            <label>Intervallo iniziale (minuti)</label>
             <input
               type="number"
               id="input-intervallo-iniziale"
@@ -98,7 +91,6 @@
               Ad ogni sigaretta fumata, l'intervallo aumenta di 10 minuti.
             </p>
           </div>
-
           <button
             class="btn btn-primary"
             onclick="completaOnboarding()"
@@ -108,60 +100,94 @@
           </button>
         </div>
       </div>
+
       <!-- HEADER -->
       <div class="header">
         <h1>🚭 SmettiFumo</h1>
-        <p>Il tuo piano personale</p>
+        <p id="header-sottotitolo">Il tuo piano personale</p>
       </div>
 
       <!-- TABS -->
       <div class="tabs">
-        <button class="tab active" onclick="mostraPagina('oggi')">Oggi</button>
+        <button class="tab active" onclick="mostraPagina('dashboard')">
+          Dashboard
+        </button>
         <button class="tab" onclick="mostraPagina('timer')">Timer</button>
-        <button class="tab" onclick="mostraPagina('piano')">Piano</button>
-        <button class="tab" onclick="mostraPagina('soldi')">Soldi</button>
         <button class="tab" onclick="mostraPagina('impostazioni')">⚙️</button>
       </div>
 
-      <!-- PAGINA OGGI -->
-      <div id="pagina-oggi" class="pagina attiva">
-        <div class="metric-grid">
-          <div class="metric">
-            <div class="metric-label">Fumate oggi</div>
-            <div class="metric-value amber" id="cig-oggi">0</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Obiettivo</div>
-            <div class="metric-value" id="cig-obiettivo">12</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Risparmiate</div>
-            <div class="metric-value green" id="cig-risparmiate">15</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Settimana</div>
-            <div class="metric-value" id="settimana-label">Sett. 1</div>
-          </div>
-        </div>
-        <div class="progress-wrap">
-          <div
-            class="progress-bar"
-            id="barra-progresso"
-            style="width: 0%"
-          ></div>
-        </div>
-        <p class="testo-progresso" id="testo-progresso">
-          0 / 12 sigarette oggi
-        </p>
-        <button class="btn btn-primary" onclick="fumatoOra()">
-          Ho fumato una sigaretta
-        </button>
-        <button class="btn btn-danger" onclick="annullaUltima()">
-          Annulla ultima
-        </button>
+      <!-- PAGINA DASHBOARD -->
+      <div id="pagina-dashboard" class="pagina attiva">
+        <!-- OGGI -->
         <div class="card">
-          <h3>Registro di oggi</h3>
-          <div id="log-lista"></div>
+          <h3>Oggi</h3>
+          <div class="metric-grid" style="margin-top: 10px">
+            <div class="metric">
+              <div class="metric-label">Fumate</div>
+              <div class="metric-value amber" id="cig-oggi">0</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Obiettivo</div>
+              <div class="metric-value" id="cig-obiettivo">--</div>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div
+              class="progress-bar"
+              id="barra-progresso"
+              style="width: 0%"
+            ></div>
+          </div>
+          <p class="testo-progresso" id="testo-progresso">
+            0 / -- sigarette oggi
+          </p>
+          <button class="btn btn-primary" onclick="fumatoOra()">
+            Ho fumato una sigaretta
+          </button>
+          <button class="btn btn-danger" onclick="annullaUltima()">
+            Annulla ultima
+          </button>
+          <div id="log-lista" style="margin-top: 8px"></div>
+        </div>
+
+        <!-- IL MIO PERCORSO -->
+        <div class="card">
+          <h3>Il mio percorso</h3>
+          <div class="metric-grid" style="margin-top: 10px">
+            <div class="metric">
+              <div class="metric-label">Giorni dall'inizio</div>
+              <div class="metric-value green" id="stat-giorni">0</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Giorni obiettivo ✅</div>
+              <div class="metric-value green" id="stat-giorni-ok">0</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Sigarette evitate</div>
+              <div class="metric-value green" id="stat-evitate">0</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Risparmio totale</div>
+              <div class="metric-value green" id="stat-risparmio">€0,00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RISPARMIO -->
+        <div class="card">
+          <h3>Proiezioni risparmio</h3>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 3 mesi</span>
+            <span class="proiezione-valore" id="proj-3mesi">--</span>
+          </div>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 6 mesi</span>
+            <span class="proiezione-valore" id="proj-6mesi">--</span>
+          </div>
+          <div class="proiezione-riga">
+            <span class="proiezione-label">Dopo 1 anno</span>
+            <span class="proiezione-valore" id="proj-anno">--</span>
+          </div>
         </div>
       </div>
 
@@ -176,7 +202,7 @@
         <div class="metric-grid">
           <div class="metric">
             <div class="metric-label">Intervallo attuale</div>
-            <div class="metric-value" id="intervallo-label">80 min</div>
+            <div class="metric-value" id="intervallo-label">--</div>
           </div>
           <div class="metric">
             <div class="metric-label">Prossima alle</div>
@@ -197,54 +223,6 @@
         </div>
       </div>
 
-      <!-- PAGINA PIANO -->
-      <div id="pagina-piano" class="pagina">
-        <div class="card">
-          <h3 style="margin-bottom: 12px">Piano 8 settimane</h3>
-          <div id="piano-lista"></div>
-        </div>
-      </div>
-
-      <!-- PAGINA SOLDI -->
-      <div id="pagina-soldi" class="pagina">
-        <div class="metric-grid">
-          <div class="metric">
-            <div class="metric-label">Risparmio oggi</div>
-            <div class="metric-value green" id="soldi-oggi">€0,00</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Totale risparmiato</div>
-            <div class="metric-value green" id="soldi-totale">€0,00</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Giorni dal via</div>
-            <div class="metric-value" id="giorni-totali">0</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">Sigarette evitate</div>
-            <div class="metric-value green" id="sigarette-evitate">0</div>
-          </div>
-        </div>
-        <div class="card">
-          <h3>Proiezioni risparmio</h3>
-          <div class="proiezione-riga">
-            <span class="proiezione-label">Fine piano (8 sett.)</span>
-            <span class="proiezione-valore">~€120</span>
-          </div>
-          <div class="proiezione-riga">
-            <span class="proiezione-label">Dopo 3 mesi</span>
-            <span class="proiezione-valore">~€260</span>
-          </div>
-          <div class="proiezione-riga">
-            <span class="proiezione-label">Dopo 6 mesi</span>
-            <span class="proiezione-valore">~€520</span>
-          </div>
-          <div class="proiezione-riga">
-            <span class="proiezione-label">Dopo 1 anno</span>
-            <span class="proiezione-valore">~€1.058</span>
-          </div>
-        </div>
-      </div>
       <!-- PAGINA IMPOSTAZIONI -->
       <div id="pagina-impostazioni" class="pagina">
         <div class="card">
@@ -266,7 +244,6 @@
             <span class="impostazione-valore" id="info-data">--</span>
           </div>
         </div>
-
         <div class="card">
           <h3>Modifica impostazioni</h3>
           <div class="onboarding-campo" style="margin-top: 12px">
@@ -285,7 +262,6 @@
             Salva modifiche
           </button>
         </div>
-
         <div class="card" style="margin-top: 10px">
           <h3>Zona pericolosa</h3>
           <p style="font-size: 13px; color: #888; margin-bottom: 12px">
