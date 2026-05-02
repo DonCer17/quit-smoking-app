@@ -213,7 +213,6 @@ function fumatoOra() {
     const ora = formattaOra(new Date());
     stato.logOggi.push(ora);
 
-    // In modalità libera aumenta l'intervallo di 10 minuti
     if (stato.modalita === "libera") {
         stato.intervalloCorrente += 10;
     }
@@ -221,6 +220,9 @@ function fumatoOra() {
     stato.timerFine = Date.now() + getIntervallo() * 60000;
     salvaStato();
     aggiornaOggi();
+
+    // Schedula notifica allo scadere del timer
+    schedulaNotifica(getIntervallo());
 }
 
 function annullaUltima() {
@@ -269,6 +271,7 @@ function avviaTimer() {
 
 function resetTimer() {
     stato.timerFine = null;
+    if (window._notificaTimer) clearTimeout(window._notificaTimer);
     salvaStato();
     aggiornaTimer();
 }
@@ -377,6 +380,44 @@ function resetApp() {
         localStorage.removeItem("smetti_stato");
         window.location.reload();
     }
+}
+
+// ================================
+// NOTIFICHE
+// ================================
+async function richiediPermessoNotifiche() {
+    if (!("Notification" in window)) return false;
+    if (Notification.permission === "granted") return true;
+    if (Notification.permission === "denied") return false;
+
+    const permesso = await Notification.requestPermission();
+    return permesso === "granted";
+}
+
+async function schedulaNotifica(minutiRimanenti) {
+    const permesso = await richiediPermessoNotifiche();
+    if (!permesso) return;
+
+    // Cancella eventuali notifiche precedenti
+    if (window._notificaTimer) clearTimeout(window._notificaTimer);
+
+    const ms = minutiRimanenti * 60 * 1000;
+
+    window._notificaTimer = setTimeout(() => {
+        if (Notification.permission === "granted") {
+            const reg = navigator.serviceWorker.controller;
+            if (reg) {
+                navigator.serviceWorker.ready.then((registration) => {
+                    registration.showNotification("🚭 SmettiFumo", {
+                        body: "Il timer è scaduto — puoi fumare adesso. Ma se riesci ad aspettare ancora, sei più forte!",
+                        icon: "/quit-smoking-app/icons/icon-192.png",
+                        badge: "/quit-smoking-app/icons/icon-192.png",
+                        vibrate: [200, 100, 200],
+                    });
+                });
+            }
+        }
+    }, ms);
 }
 
 // ================================
