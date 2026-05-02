@@ -13,6 +13,101 @@
   </head>
   <body>
     <div id="app">
+      <!-- ONBOARDING -->
+      <div id="pagina-onboarding" class="pagina attiva">
+        <div class="onboarding-wrap">
+          <div class="onboarding-logo">🚭</div>
+          <h1 class="onboarding-titolo">SmettiFumo</h1>
+          <p class="onboarding-sottotitolo">
+            Rispondi a 3 domande per personalizzare il tuo piano
+          </p>
+
+          <div class="onboarding-campo">
+            <label>Quante sigarette fumi al giorno?</label>
+            <input
+              type="number"
+              id="input-sigarette"
+              placeholder="es. 15"
+              min="1"
+              max="60"
+            />
+          </div>
+
+          <div class="onboarding-campo">
+            <label>Prezzo del pacchetto (€)</label>
+            <input
+              type="number"
+              id="input-prezzo"
+              placeholder="es. 5.80"
+              min="1"
+              step="0.1"
+            />
+          </div>
+
+          <div class="onboarding-campo">
+            <label>Sigarette per pacchetto</label>
+            <input
+              type="number"
+              id="input-quantita"
+              placeholder="es. 20"
+              min="1"
+              max="40"
+            />
+          </div>
+
+          <div class="onboarding-campo">
+            <label>Modalità timer</label>
+            <div class="toggle-wrap">
+              <button
+                class="toggle-btn active"
+                id="btn-modalita-piano"
+                onclick="selezionaModalita('piano')"
+              >
+                Piano 8 settimane
+              </button>
+              <button
+                class="toggle-btn"
+                id="btn-modalita-libera"
+                onclick="selezionaModalita('libera')"
+              >
+                Intervallo crescente
+              </button>
+            </div>
+            <p class="toggle-descrizione" id="descrizione-modalita">
+              Segui un piano strutturato: ogni settimana riduci le sigarette
+              fino a smettere.
+            </p>
+          </div>
+
+          <div
+            class="onboarding-campo"
+            id="campo-intervallo-iniziale"
+            style="display: none"
+          >
+            <label
+              >Intervallo iniziale tra una sigaretta e l'altra (minuti)</label
+            >
+            <input
+              type="number"
+              id="input-intervallo-iniziale"
+              placeholder="es. 60"
+              min="10"
+              max="240"
+            />
+            <p class="toggle-descrizione">
+              Ad ogni sigaretta fumata, l'intervallo aumenta di 10 minuti.
+            </p>
+          </div>
+
+          <button
+            class="btn btn-primary"
+            onclick="completaOnboarding()"
+            style="margin-top: 1.5rem"
+          >
+            Inizia il percorso →
+          </button>
+        </div>
+      </div>
       <!-- HEADER -->
       <div class="header">
         <h1>🚭 SmettiFumo</h1>

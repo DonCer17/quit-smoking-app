@@ -286,3 +286,86 @@ body {
   font-weight: 600;
   color: #1d9e75;
 }
+
+/* ONBOARDING */
+.onboarding-wrap {
+  padding: 2rem 0.5rem;
+}
+
+.onboarding-logo {
+  font-size: 64px;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-titolo {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1d9e75;
+  margin-bottom: 0.25rem;
+}
+
+.onboarding-sottotitolo {
+  font-size: 14px;
+  color: #888;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.onboarding-campo {
+  margin-bottom: 1.25rem;
+}
+
+.onboarding-campo label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.onboarding-campo input {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #1a1a1a;
+  background: white;
+  outline: none;
+}
+
+.onboarding-campo input:focus {
+  border-color: #1d9e75;
+}
+
+.toggle-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  background: white;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  border-color: #1d9e75;
+  background: #f0fdf8;
+  color: #1d9e75;
+  font-weight: 600;
+}
+
+.toggle-descrizione {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+}
