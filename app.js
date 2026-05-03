@@ -48,8 +48,32 @@ function getSettimanaCorrente() {
 }
 
 function getObiettivoOggi() {
-    if (stato.modalita === "libera") return stato.sigaretteAlGiorno;
-    return SETTIMANE[getSettimanaCorrente()].sigarette;
+    // Dal secondo giorno in poi usa lo storico reale
+    if (stato.storicoGiornaliero && stato.storicoGiornaliero.length > 0) {
+        const ieri = stato.storicoGiornaliero[stato.storicoGiornaliero.length - 1];
+        return ieri.fumate;
+    }
+    // Primo giorno — usa il valore inserito nell'onboarding
+    return stato.sigaretteAlGiorno;
+}
+
+function getFumateIeri() {
+    if (stato.storicoGiornaliero && stato.storicoGiornaliero.length > 0) {
+        return stato.storicoGiornaliero[stato.storicoGiornaliero.length - 1].fumate;
+    }
+    return stato.sigaretteAlGiorno;
+}
+
+function getMediaUltimi7() {
+    if (!stato.storicoGiornaliero || stato.storicoGiornaliero.length === 0) return null;
+    const ultimi = stato.storicoGiornaliero.slice(-7);
+    const somma = ultimi.reduce((acc, g) => acc + g.fumate, 0);
+    return Math.round(somma / ultimi.length);
+}
+
+function getGiornoMigliore() {
+    if (!stato.storicoGiornaliero || stato.storicoGiornaliero.length === 0) return null;
+    return Math.min(...stato.storicoGiornaliero.map((g) => g.fumate));
 }
 
 function getIntervallo() {
@@ -264,21 +288,42 @@ function mostraPagina(id) {
 // ================================
 function aggiornaDashboard() {
     const fumateOggi = stato.logOggi.length;
-    const obiettivo = getObiettivoOggi();
+    const ieri = getFumateIeri();
+    const tendenza = fumateOggi - ieri;
     const giorni = stato.dataInizio
         ? Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000) + 1
         : 1;
-    const totaleEvitate = Math.round(stato.totaleRisparmiato / getPrezzoSigaretta());
     const risparmioOggi = Math.max(0, stato.sigaretteAlGiorno - fumateOggi) * getPrezzoSigaretta();
     const totale = stato.totaleRisparmiato + risparmioOggi;
+    const media = getMediaUltimi7();
+    const migliore = getGiornoMigliore();
     const risparmioGiornaliero = stato.sigaretteAlGiorno * getPrezzoSigaretta();
 
     // Oggi
     document.getElementById("cig-oggi").textContent = fumateOggi;
-    document.getElementById("cig-obiettivo").textContent = obiettivo;
-    const pct = obiettivo > 0 ? Math.min(100, Math.round(fumateOggi / obiettivo * 100)) : 100;
+    document.getElementById("cig-ieri").textContent = ieri;
+
+    // Tendenza
+    const tendenzaEl = document.getElementById("cig-tendenza");
+    if (giorni === 1) {
+        tendenzaEl.textContent = "primo giorno";
+        tendenzaEl.className = "metric-value";
+    } else if (tendenza < 0) {
+        tendenzaEl.textContent = "↓ " + Math.abs(tendenza) + " meno";
+        tendenzaEl.className = "metric-value green";
+    } else if (tendenza === 0) {
+        tendenzaEl.textContent = "= uguale";
+        tendenzaEl.className = "metric-value";
+    } else {
+        tendenzaEl.textContent = "↑ " + tendenza + " più";
+        tendenzaEl.className = "metric-value amber";
+    }
+
+    // Barra progresso — oggi vs ieri
+    const pct = ieri > 0 ? Math.min(100, Math.round((fumateOggi / ieri) * 100)) : 0;
     document.getElementById("barra-progresso").style.width = pct + "%";
-    document.getElementById("testo-progresso").textContent = fumateOggi + " / " + obiettivo + " sigarette oggi";
+    document.getElementById("barra-progresso").style.background = tendenza <= 0 ? "#1D9E75" : "#E07B39";
+    document.getElementById("testo-progresso").textContent = fumateOggi + " oggi vs " + ieri + " ieri";
 
     // Log
     const logEl = document.getElementById("log-lista");
@@ -292,19 +337,22 @@ function aggiornaDashboard() {
 
     // Percorso
     document.getElementById("stat-giorni").textContent = giorni;
+    document.getElementById("stat-streak").textContent = calcolaStreak();
     document.getElementById("stat-giorni-ok").textContent = stato.giorniObiettivo || 0;
-    document.getElementById("stat-evitate").textContent = totaleEvitate;
+    document.getElementById("stat-evitate").textContent = Math.round(totale / getPrezzoSigaretta());
     document.getElementById("stat-risparmio").textContent = formattaEuro(totale);
+    document.getElementById("stat-media").textContent = media !== null ? media : "--";
+    document.getElementById("stat-migliore").textContent = migliore !== null ? migliore : "--";
 
-    // Proiezioni basate sul risparmio giornaliero reale
+    // Proiezioni
     document.getElementById("proj-3mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 90);
     document.getElementById("proj-6mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 180);
     document.getElementById("proj-anno").textContent = "~" + formattaEuro(risparmioGiornaliero * 365);
 
-    // Header sottotitolo
+    // Header
     document.getElementById("header-sottotitolo").textContent = "Giorno " + giorni + " del percorso";
     document.getElementById("messaggio-motivazionale").textContent = getMessaggioMotivazionale();
-    document.getElementById("stat-streak").textContent = calcolaStreak();
+
     aggiornaGrafico();
 }
 

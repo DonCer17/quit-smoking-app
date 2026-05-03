@@ -123,12 +123,16 @@
           <h3>Oggi</h3>
           <div class="metric-grid" style="margin-top: 10px">
             <div class="metric">
-              <div class="metric-label">Fumate</div>
+              <div class="metric-label">Fumate oggi</div>
               <div class="metric-value amber" id="cig-oggi">0</div>
             </div>
             <div class="metric">
-              <div class="metric-label">Obiettivo</div>
-              <div class="metric-value" id="cig-obiettivo">--</div>
+              <div class="metric-label">Ieri</div>
+              <div class="metric-value" id="cig-ieri">--</div>
+            </div>
+            <div class="metric" style="grid-column: span 2">
+              <div class="metric-label">Tendenza</div>
+              <div class="metric-value" id="cig-tendenza">--</div>
             </div>
           </div>
           <div class="progress-wrap">
@@ -138,9 +142,7 @@
               style="width: 0%"
             ></div>
           </div>
-          <p class="testo-progresso" id="testo-progresso">
-            0 / -- sigarette oggi
-          </p>
+          <p class="testo-progresso" id="testo-progresso">0 oggi vs -- ieri</p>
           <button class="btn btn-primary" onclick="fumatoOra()">
             Ho fumato una sigaretta
           </button>
@@ -172,6 +174,14 @@
               <div class="metric-value green" id="stat-evitate">0</div>
             </div>
             <div class="metric">
+              <div class="metric-label">Media 7 giorni</div>
+              <div class="metric-value" id="stat-media">--</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Giorno migliore 🏆</div>
+              <div class="metric-value green" id="stat-migliore">--</div>
+            </div>
+            <div class="metric" style="grid-column: span 2">
               <div class="metric-label">Risparmio totale</div>
               <div class="metric-value green" id="stat-risparmio">€0,00</div>
             </div>

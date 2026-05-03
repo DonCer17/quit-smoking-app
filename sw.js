@@ -1,4 +1,4 @@
-const CACHE_NAME = "stopSmoking-v6";
+const CACHE_NAME = "stopSmoking-v7";
 const FILES_DA_CACHARE = [
     "/quit-smoking-app/",
     "/quit-smoking-app/index.html",
