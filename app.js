@@ -293,15 +293,25 @@ function aggiornaDashboard() {
     const giorni = stato.dataInizio
         ? Math.floor((Date.now() - new Date(stato.dataInizio).getTime()) / 86400000) + 1
         : 1;
-    const risparmioOggi = Math.max(0, stato.sigaretteAlGiorno - fumateOggi) * getPrezzoSigaretta();
-    const totale = stato.totaleRisparmiato + risparmioOggi;
     const media = getMediaUltimi7();
     const migliore = getGiornoMigliore();
-    const risparmioGiornaliero = stato.sigaretteAlGiorno * getPrezzoSigaretta();
+    const haDatiSufficienti = stato.storicoGiornaliero && stato.storicoGiornaliero.length >= 7;
 
-    // Oggi
+    // Calcoli basati su dati reali (solo dal giorno 8)
+    const mediaGiornaliera = haDatiSufficienti ? media : null;
+    const sigaretteEvitate = haDatiSufficienti
+        ? Math.max(0, Math.round(mediaGiornaliera * (giorni - 7) - stato.storicoGiornaliero.slice(7).reduce((a, g) => a + g.fumate, 0)))
+        : null;
+    const risparmioReale = haDatiSufficienti
+        ? stato.totaleRisparmiato
+        : null;
+    const risparmioGiornalieroReale = haDatiSufficienti
+        ? (stato.storicoGiornaliero.slice(-7).reduce((a, g) => a + g.fumate, 0) / 7) * getPrezzoSigaretta()
+        : null;
+
+    // OGGI
     document.getElementById("cig-oggi").textContent = fumateOggi;
-    document.getElementById("cig-ieri").textContent = ieri;
+    document.getElementById("cig-ieri").textContent = giorni === 1 ? "--" : ieri;
 
     // Tendenza
     const tendenzaEl = document.getElementById("cig-tendenza");
@@ -309,21 +319,23 @@ function aggiornaDashboard() {
         tendenzaEl.textContent = "primo giorno";
         tendenzaEl.className = "metric-value";
     } else if (tendenza < 0) {
-        tendenzaEl.textContent = "↓ " + Math.abs(tendenza) + " meno";
+        tendenzaEl.textContent = "↓ " + Math.abs(tendenza) + " meno di ieri";
         tendenzaEl.className = "metric-value green";
     } else if (tendenza === 0) {
-        tendenzaEl.textContent = "= uguale";
+        tendenzaEl.textContent = "= uguale a ieri";
         tendenzaEl.className = "metric-value";
     } else {
-        tendenzaEl.textContent = "↑ " + tendenza + " più";
+        tendenzaEl.textContent = "↑ " + tendenza + " più di ieri";
         tendenzaEl.className = "metric-value amber";
     }
 
-    // Barra progresso — oggi vs ieri
+    // Barra progresso
     const pct = ieri > 0 ? Math.min(100, Math.round((fumateOggi / ieri) * 100)) : 0;
     document.getElementById("barra-progresso").style.width = pct + "%";
     document.getElementById("barra-progresso").style.background = tendenza <= 0 ? "#1D9E75" : "#E07B39";
-    document.getElementById("testo-progresso").textContent = fumateOggi + " oggi vs " + ieri + " ieri";
+    document.getElementById("testo-progresso").textContent = giorni === 1
+        ? fumateOggi + " sigarette oggi"
+        : fumateOggi + " oggi vs " + ieri + " ieri";
 
     // Log
     const logEl = document.getElementById("log-lista");
@@ -335,21 +347,32 @@ function aggiornaDashboard() {
             .join("");
     }
 
-    // Percorso
+    // PERCORSO
     document.getElementById("stat-giorni").textContent = giorni;
     document.getElementById("stat-streak").textContent = calcolaStreak();
-    document.getElementById("stat-giorni-ok").textContent = stato.giorniObiettivo || 0;
-    document.getElementById("stat-evitate").textContent = Math.round(totale / getPrezzoSigaretta());
-    document.getElementById("stat-risparmio").textContent = formattaEuro(totale);
     document.getElementById("stat-media").textContent = media !== null ? media : "--";
     document.getElementById("stat-migliore").textContent = migliore !== null ? migliore : "--";
 
-    // Proiezioni
-    document.getElementById("proj-3mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 90);
-    document.getElementById("proj-6mesi").textContent = "~" + formattaEuro(risparmioGiornaliero * 180);
-    document.getElementById("proj-anno").textContent = "~" + formattaEuro(risparmioGiornaliero * 365);
+    // Metriche avanzate — visibili solo dal giorno 8
+    const sezioneAvanzata = document.getElementById("sezione-avanzata");
+    if (haDatiSufficienti) {
+        sezioneAvanzata.style.display = "block";
+        document.getElementById("stat-evitate").textContent = sigaretteEvitate !== null ? sigaretteEvitate : "--";
+        document.getElementById("stat-risparmio").textContent = risparmioReale !== null ? formattaEuro(risparmioReale) : "--";
+        document.getElementById("proj-3mesi").textContent = risparmioGiornalieroReale
+            ? "~" + formattaEuro(risparmioGiornalieroReale * 90) : "--";
+        document.getElementById("proj-6mesi").textContent = risparmioGiornalieroReale
+            ? "~" + formattaEuro(risparmioGiornalieroReale * 180) : "--";
+        document.getElementById("proj-anno").textContent = risparmioGiornalieroReale
+            ? "~" + formattaEuro(risparmioGiornalieroReale * 365) : "--";
+    } else {
+        sezioneAvanzata.style.display = "none";
+        // Mostra quanti giorni mancano
+        const mancano = 7 - (stato.storicoGiornaliero ? stato.storicoGiornaliero.length : 0);
+        document.getElementById("giorni-mancanti").textContent = mancano;
+    }
 
-    // Header
+    // Header e messaggio
     document.getElementById("header-sottotitolo").textContent = "Giorno " + giorni + " del percorso";
     document.getElementById("messaggio-motivazionale").textContent = getMessaggioMotivazionale();
 
